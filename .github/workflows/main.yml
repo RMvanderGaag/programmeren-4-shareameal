@@ -15,5 +15,5 @@ jobs:
       - uses: akhileshns/heroku-deploy@v3.12.12
         with:
           heroku_api_key: ${{secrets.HEROKU_API_KEY}}
-          heroku_app_name: shareameal-prog4
-          heroku_email: r.schellius@avans.nl
+          heroku_app_name: share-a-meal-99051382
+          heroku_email: rm.vandergaag@student.avans.nl
