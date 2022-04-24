@@ -22,8 +22,6 @@ app.get("/", (req, res) => {
   });
 });
 
-//########## Users ###############
-
 //Register user
 app
   .route("/api/user")
