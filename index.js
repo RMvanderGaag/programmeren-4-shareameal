@@ -29,22 +29,32 @@ app
     let user = req.body;
     user_id++;
     if (!checkEmail(user.emailAdress)) {
-      user = {
-        id: user_id,
-        firstName: user.firstName,
-        lastName: user.lastName,
-        street: user.street,
-        password: user.password,
-        emailAdress: user.emailAdress,
-      };
+      if (Array.isArray(user.roles)) {
+        user = {
+          id: user_id,
+          firstName: user.firstName,
+          lastName: user.lastName,
+          street: user.street,
+          city: user.city,
+          phoneNumber: user.phoneNumber,
+          password: user.password,
+          emailAdress: user.emailAdress,
+          roles: user.roles,
+        };
 
-      console.log(user);
+        console.log(user);
 
-      database.push(user);
-      res.status(201).json({
-        status: 201,
-        result: user,
-      });
+        database.push(user);
+        res.status(201).json({
+          status: 201,
+          result: user,
+        });
+      } else {
+        res.status(400).json({
+          status: 400,
+          result: "Roles must be an array",
+        });
+      }
     } else {
       res.status(409).json({
         status: 409,
@@ -84,7 +94,7 @@ app
     } else {
       res.status(404).json({
         status: 404,
-        result: "User not found",
+        result: `User with id ${userId} could not be found`,
       });
     }
   })
@@ -96,20 +106,29 @@ app
     let userIndex = database.findIndex((obj) => obj.id == userId);
 
     if (userIndex > -1) {
-      database[userIndex] = {
-        id: parseInt(userId),
-        firstName: newUserInfo.firstName,
-        lastName: newUserInfo.lastName,
-        street: newUserInfo.street,
-        city: newUserInfo.city,
-        password: newUserInfo.password,
-        emailAdress: newUserInfo.emailAdress,
-      };
+      if (Array.isArray(newUserInfo.roles)) {
+        database[userIndex] = {
+          id: parseInt(userId),
+          firstName: newUserInfo.firstName,
+          lastName: newUserInfo.lastName,
+          street: newUserInfo.street,
+          city: newUserInfo.city,
+          phoneNumber: newUserInfo.phoneNumber,
+          password: newUserInfo.password,
+          emailAdress: newUserInfo.emailAdress,
+          roles: newUserInfo.roles,
+        };
 
-      res.status(200).json({
-        status: 200,
-        result: database[userIndex],
-      });
+        res.status(200).json({
+          status: 200,
+          result: database[userIndex],
+        });
+      } else {
+        res.status(400).json({
+          status: 400,
+          result: "Roles must be an array",
+        });
+      }
     } else {
       res.status(404).json({
         status: 404,
@@ -127,12 +146,12 @@ app
 
       res.status(202).json({
         status: 202,
-        result: "Succesfully deleted user",
+        result: `Succesfully deleted user ${userId}`,
       });
     } else {
       res.status(404).json({
         status: 404,
-        result: "User not found",
+        result: `User with id ${userId} is succesfully deleted`,
       });
     }
   });
