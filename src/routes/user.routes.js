@@ -23,7 +23,7 @@ router
     .get("/api/user/:id", userController.getUserById)
 
     //Update user
-    .put("/api/user/:id", userController.updateUser)
+    .put("/api/user/:id", userController.validateUser, userController.updateUser)
 
     //Delete user
     .delete("/api/user/:id", userController.deleteUser)

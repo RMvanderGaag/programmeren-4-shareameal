@@ -15,6 +15,7 @@ let controller = {
             assert(typeof emailAdress === 'string', 'Email must be a string');
             assert(typeof phoneNumber === 'string', 'Phonenumber must be a string');
             assert(typeof password === 'string', 'Password must be a string');
+            assert((database.filter((o) => o.emailAdress === emailAdress)) < 1, 'Email must be unique');
 
             next();
         } catch (err) {
@@ -31,42 +32,27 @@ let controller = {
             result: database,
         });
     },
-    addUser: (req, res) => {
+    addUser: (req, res, next) => {
         let user = req.body;
         user_id++;
-        if (!checkEmail(user.emailAdress)) {
-            if (Array.isArray(user.roles)) {
-                user = {
-                    id: user_id,
-                    firstName: user.firstName,
-                    lastName: user.lastName,
-                    street: user.street,
-                    city: user.city,
-                    phoneNumber: user.phoneNumber,
-                    password: user.password,
-                    emailAdress: user.emailAdress,
-                    roles: user.roles,
-                };
+        user = {
+            id: user_id,
+            firstName: user.firstName,
+            lastName: user.lastName,
+            street: user.street,
+            city: user.city,
+            phoneNumber: user.phoneNumber,
+            password: user.password,
+            emailAdress: user.emailAdress,
+        };
 
-                console.log(user);
+        console.log(user);
 
-                database.push(user);
-                res.status(201).json({
-                    status: 201,
-                    result: user,
-                });
-            } else {
-                res.status(400).json({
-                    status: 400,
-                    result: "Roles must be an array",
-                });
-            }
-        } else {
-            res.status(409).json({
-                status: 409,
-                result: "Email already exists",
-            });
-        }
+        database.push(user);
+        res.status(201).json({
+            status: 201,
+            result: user,
+        });
     },
 
     getUserProfile: (req, res) => {
@@ -99,29 +85,21 @@ let controller = {
         let userIndex = database.findIndex((obj) => obj.id == userId);
 
         if (userIndex > -1) {
-            if (Array.isArray(newUserInfo.roles)) {
-                database[userIndex] = {
-                    id: parseInt(userId),
-                    firstName: newUserInfo.firstName,
-                    lastName: newUserInfo.lastName,
-                    street: newUserInfo.street,
-                    city: newUserInfo.city,
-                    phoneNumber: newUserInfo.phoneNumber,
-                    password: newUserInfo.password,
-                    emailAdress: newUserInfo.emailAdress,
-                    roles: newUserInfo.roles,
-                };
+            database[userIndex] = {
+                id: parseInt(userId),
+                firstName: newUserInfo.firstName,
+                lastName: newUserInfo.lastName,
+                street: newUserInfo.street,
+                city: newUserInfo.city,
+                phoneNumber: newUserInfo.phoneNumber,
+                password: newUserInfo.password,
+                emailAdress: newUserInfo.emailAdress,
+            };
 
-                res.status(200).json({
-                    status: 200,
-                    result: database[userIndex],
-                });
-            } else {
-                res.status(400).json({
-                    status: 400,
-                    result: "Roles must be an array",
-                });
-            }
+            res.status(200).json({
+                status: 200,
+                result: database[userIndex],
+            });
         } else {
             res.status(404).json({
                 status: 404,
@@ -147,14 +125,6 @@ let controller = {
             });
         }
     }
-}
-
-function checkEmail(emailAdress) {
-    const filteredArray = database.filter((o) => o.emailAdress === emailAdress);
-    if (filteredArray.length > 0) {
-        return true;
-    }
-    return false;
 }
 
 module.exports = controller;
