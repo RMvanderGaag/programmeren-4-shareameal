@@ -22,10 +22,7 @@ describe('UC-201 Registreren als nieuwe gebruiker', () => {
                     city: "Breda",
                     phoneNumber: "06123456789",
                     password: "secret",
-                    emailAdress: "j.doe@student.avans.nl",
-                    roles: [
-                        "Admin"
-                    ],
+                    emailAdress: "j.doe@student.avans.nl"
                 }).end((err, res) => {
                     res.should.be.an('object');
                     let { status, result } = res.body;
