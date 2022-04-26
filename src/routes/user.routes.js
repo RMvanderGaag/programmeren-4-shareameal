@@ -11,7 +11,7 @@ router.get("/", (req, res) => {
 
 router
     //Post user
-    .post("/api/user", userController.addUser)
+    .post("/api/user", userController.validateUser, userController.addUser)
 
     //Get all users
     .get("/api/user", userController.getAllUsers)
