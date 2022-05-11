@@ -110,51 +110,29 @@ describe('Manage users api/user', () => {
 
         it("TC 201-5 when the user is successfully stored, a succes message should be returned", (done) => {
             chai.request(server).post('/api/user').send({
-                firstName: "first",
-                lastName: "last",
-                street: "street",
-                city: "city",
+                firstName: "John",
+                lastName: "Doe",
+                street: "Lovensdijkstraat 61",
+                city: "Breda",
                 isActive: true,
-                emailAdress: "email@server.nl",
-                phoneNumber: "+31635368583",
+                emailAdress: "j.doe@server.com",
+                phoneNumber: "+31612345678",
                 password: "secret"
             })
                 .end((err, res) => {
-                    assert.ifError(err);
-
                     res.should.have.status(201);
                     res.should.be.an('object');
                     res.body.should.be.an('object').that.has.all.keys('status', 'result');
 
                     let { status, result } = res.body;
                     status.should.be.a('number');
-                    result.should.be.an('object').that.includes.keys('firstName', 'lastName', 'street', 'city', 'isActive', 'emailAdress', 'password');
 
                     done();
                 });
-        });
+        })
     });
 
     describe('UC-204 user details', () => {
-        beforeEach((done) => {
-            //Connect to the database
-            dbconnection.getConnection(function (connError, conn) {
-                if (connError) throw connError;
-
-                //Empty database for testing
-                conn.query(CLEAR_USERS_TABLE, function (dbError, results, fields) {
-                    // When done with the connection, release it.
-                    conn.release();
-
-
-                    // Handle error after the release.
-                    if (dbError) throw dbError;
-
-                    done();
-                }
-                )
-            });
-        });
         it("TC 204-2 When a user id doesn't exist, an error should be returned", (done) => {
             chai.request(server).get("/api/user/1000")
                 .end((err, res) => {
