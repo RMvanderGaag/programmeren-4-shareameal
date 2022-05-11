@@ -1,6 +1,6 @@
-const express = require('express');
+const express = require("express");
 const router = express.Router();
-const userController = require('../controllers/user.controller')
+const userController = require("../controllers/user.controller");
 
 router.get("/", (req, res) => {
     res.status(200).json({
@@ -20,15 +20,20 @@ router
     .get("/api/user/profile", userController.getUserProfile)
 
     //Get user by id
-    .get("/api/user/:id", userController.getUserById)
+    .get("/api/user/:id", userController.validateId, userController.getUserById)
 
     //Update user
-    .put("/api/user/:id", userController.validateUser, userController.updateUser)
+    .put(
+        "/api/user/:id",
+        userController.validateUser,
+        userController.updateUser
+    )
 
     //Delete user
-    .delete("/api/user/:id", userController.deleteUser)
-
-
-
+    .delete(
+        "/api/user/:id",
+        userController.validateId,
+        userController.deleteUser
+    );
 
 module.exports = router;
