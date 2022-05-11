@@ -120,6 +120,8 @@ describe('Manage users api/user', () => {
                 password: "secret"
             })
                 .end((err, res) => {
+                    assert.ifError(err);
+
                     res.should.have.status(201);
                     res.should.be.an('object');
                     res.body.should.be.an('object').that.has.all.keys('status', 'result');
