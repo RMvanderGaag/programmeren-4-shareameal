@@ -6,7 +6,7 @@ on:
       - main
 
 jobs:
-    integrationtests:
+integrationtests:
         runs-on: ubuntu-latest
         env:
             MYSQL_ROOT_PASSWORD: root
