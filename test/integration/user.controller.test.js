@@ -110,13 +110,13 @@ describe('Manage users api/user', () => {
 
         it("TC 201-5 when the user is successfully stored, a succes message should be returned", (done) => {
             chai.request(server).post('/api/user').send({
-                firstName: "John",
-                lastName: "Doe",
-                street: "Lovensdijkstraat 61",
-                city: "Breda",
+                firstName: "first",
+                lastName: "last",
+                street: "street",
+                city: "city",
                 isActive: true,
-                emailAdress: "j.doe@server.com",
-                phoneNumber: "+31612345678",
+                emailAdress: "email@server.nl",
+                phoneNumber: "+31635368583",
                 password: "secret"
             })
                 .end((err, res) => {
@@ -128,10 +128,11 @@ describe('Manage users api/user', () => {
 
                     let { status, result } = res.body;
                     status.should.be.a('number');
+                    result.should.be.an('object').that.includes.keys('firstName', 'lastName', 'street', 'city', 'isActive', 'emailAdress', 'password');
 
                     done();
                 });
-        })
+        });
     });
 
     describe('UC-204 user details', () => {
