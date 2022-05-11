@@ -26,6 +26,7 @@ router
     .put(
         "/api/user/:id",
         userController.validateUser,
+        userController.validateId,
         userController.updateUser
     )
 

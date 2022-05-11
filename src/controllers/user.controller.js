@@ -17,17 +17,14 @@ let controller = {
             password,
         } = user;
         try {
-            assert(typeof firstName === "string", "Firstname must be a string");
-            assert(typeof lastName === "string", "Lastname must be a string");
-            assert(typeof street === "string", "Street must be a string");
-            assert(typeof city === "string", "City must be a string");
-            assert(typeof isActive === "boolean", "isActive must be a boolean");
-            assert(typeof emailAdress === "string", "Email must be a string");
-            assert(
-                typeof phoneNumber === "string",
-                "Phonenumber must be a string"
-            );
-            assert(typeof password === "string", "Password must be a string");
+            assert(typeof firstName === 'string', 'Firstname must be a string');
+            assert(typeof lastName === 'string', 'LastName must be a string');
+            assert(typeof street === 'string', 'Street must be a string');
+            assert(typeof city === 'string', 'City must be a string');
+            assert(typeof isActive === 'boolean', 'IsActive must be a boolean');
+            assert(typeof emailAdress === 'string', 'EmailAddress must be a string');
+            assert(typeof phoneNumber === 'string', 'PhoneNumber must be a string');
+            assert(typeof password === 'string', 'Password must a string');
 
             next();
         } catch (err) {
