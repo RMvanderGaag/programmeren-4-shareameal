@@ -24,6 +24,20 @@ chai.should();
 chai.use(chaiHttp);
 
 describe('Manage users api/user', () => {
+    before((done) => {
+        // clearing the test database
+        dbconnection.getConnection(function (err, connection) {
+            if (err) throw err;
+            connection.query(CLEAR_MEAL_TABLE, function (error, message, field) {
+                connection.query(CLEAR_PARTICIPANTS_TABLE, function (error, message, field) {
+                    connection.query(CLEAR_USERS_TABLE, function (error, message, field) {
+                        connection.release();
+                        done();
+                    });
+                });
+            });
+        });
+    })
     describe('UC-201 add user', () => {
         beforeEach((done) => {
             //Connect to the database
