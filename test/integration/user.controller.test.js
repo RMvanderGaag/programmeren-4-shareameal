@@ -143,6 +143,7 @@ describe('Manage users api/user', () => {
                     // When done with the connection, release it.
                     conn.release();
 
+
                     // Handle error after the release.
                     if (dbError) throw dbError;
 
