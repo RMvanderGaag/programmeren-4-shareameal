@@ -78,7 +78,6 @@ describe('Manage users api/user', () => {
                     // When done with the connection, release it.
                     conn.release();
 
-                    // Handle error after the release.
                     if (dbError) throw dbError;
 
                     chai.request(server).post('/api/user').send({
@@ -134,6 +133,24 @@ describe('Manage users api/user', () => {
     });
 
     describe('UC-204 user details', () => {
+        beforeEach((done) => {
+            //Connect to the database
+            dbconnection.getConnection(function (connError, conn) {
+                if (connError) throw connError;
+
+                //Empty database for testing
+                conn.query(CLEAR_USERS_TABLE, function (dbError, results, fields) {
+                    // When done with the connection, release it.
+                    conn.release();
+
+                    // Handle error after the release.
+                    if (dbError) throw dbError;
+
+                    done();
+                }
+                )
+            });
+        });
         it("TC 204-2 When a user id doesn't exist, an error should be returned", (done) => {
             chai.request(server).get("/api/user/1000")
                 .end((err, res) => {

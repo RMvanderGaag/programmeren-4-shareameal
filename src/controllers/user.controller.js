@@ -97,7 +97,6 @@ let controller = {
 
                 // Handle error after the release.
                 if (dbError) {
-                    console.log(dbError);
                     if (dbError.errno == 1062) {
                         res.status(409).json({
                             status: 409,
