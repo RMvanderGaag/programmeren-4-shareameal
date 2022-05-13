@@ -3,7 +3,7 @@ const chaiHttp = require('chai-http');
 const server = require('../../index');
 const assert = require('assert');
 require('dotenv').config();
-const dbconnection = require('../../database/dbconnection');
+const dbconnection = require('../../src/database/dbconnection');
 
 //Clear database sql
 const CLEAR_MEAL_TABLE = 'DELETE IGNORE FROM `meal`;';

@@ -1,7 +1,6 @@
 const assert = require("assert");
-const dbconnection = require("../../database/dbconnection");
-let database = [];
-let user_id = 0;
+const dbconnection = require("../database/dbconnection");
+const logger = require('../config/config').logger
 
 let controller = {
     validateUser: (req, res, next) => {
@@ -52,29 +51,53 @@ let controller = {
         }
     },
 
-    getAllUsers: (req, res) => {
+    getAllUsers: (req, res, next) => {
+        const queryParams = req.query;
+        logger.debug(queryParams);
+
+        let { firstName, isActive } = req.query;
+        let queryString = "SELECT * FROM `user`";
+
+        if (firstName || isActive) {
+            queryString += " WHERE "
+            if (nafirstNameme) {
+                queryString += '`firstName` LIKE ?'
+                firstName = '%' + firstName + '%'
+            }
+            if (firstName && isActive) {
+                queryString += ` AND `
+            }
+        } if (isActive) {
+            queryString += `isActive = ${isActive}`;
+        }
+
+        queryString += ";";
+
+        logger.debug(`queryString = ${queryString}`)
+
         dbconnection.getConnection(function (err, connection) {
-            if (err) throw err; // not connected!
+            if (err) next(err) // not connected!
 
             // Use the connection
             connection.query(
-                "SELECT * FROM user;",
+                queryString,
+                [firstName, isActive],
                 function (error, results, fields) {
                     // When done with the connection, release it.
-                    connection.release();
+                    connection.release()
 
                     // Handle error after the release.
-                    if (error) throw error;
+                    if (error) next(error)
 
                     // Don't use the connection here, it has been returned to the pool.
-                    console.log(results.length);
+                    logger.debug('#results = ', results.length)
                     res.status(200).json({
-                        status: 200,
-                        result: results,
-                    });
+                        statusCode: 200,
+                        results: results,
+                    })
                 }
-            );
-        });
+            )
+        })
     },
     addUser: (req, res, next) => {
         let user = req.body;
