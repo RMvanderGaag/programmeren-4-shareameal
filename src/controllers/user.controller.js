@@ -1,6 +1,8 @@
 const assert = require("assert");
 const dbconnection = require("../database/dbconnection");
 const logger = require('../config/config').logger
+const jwt = require('jsonwebtoken')
+const jwtSecretKey = require('../config/config').jwtSecretKey
 
 let controller = {
     validateUser: (req, res, next) => {
@@ -142,10 +144,43 @@ let controller = {
     },
 
     getUserProfile: (req, res) => {
-        res.status(501).json({
-            status: 501,
-            result: "This endpoint is not yet implemented",
-        });
+        if (req.headers && req.headers.authorization) {
+            var authorization = req.headers.authorization.split(' ')[1],
+                decoded;
+            try {
+                decoded = jwt.verify(authorization, jwtSecretKey);
+            } catch (e) {
+                return res.status(401).send('unauthorized');
+            }
+            var userId = decoded.userId;
+
+            dbconnection.getConnection(function (err, connection) {
+                if (err) throw err; // not connected!
+
+                // Use the connection
+                connection.query(
+                    `SELECT * FROM user WHERE id = ${userId};`,
+                    function (error, results, fields) {
+                        // When done with the connection, release it.
+                        connection.release();
+
+                        // Handle error after the release.
+                        if (results.length == 0) {
+                            res.status(404).json({
+                                status: 404,
+                                message: "User does not exist"
+                            });
+                        } else {
+                            res.status(200).json({
+                                status: 200,
+                                result: results,
+                            });
+                        }
+                    }
+                );
+            });
+        }
+
     },
 
     getUserById: (req, res) => {

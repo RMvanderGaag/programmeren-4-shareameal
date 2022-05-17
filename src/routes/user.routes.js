@@ -1,4 +1,5 @@
 const express = require("express");
+const authController = require("../controllers/auth.controller");
 const router = express.Router();
 const userController = require("../controllers/user.controller");
 
@@ -17,10 +18,11 @@ router
     .get("/api/user", userController.getAllUsers)
 
     //Request current user profile
-    .get("/api/user/profile", userController.getUserProfile)
+    .get("/api/user/profile", authController.validateToken, userController.getUserProfile)
 
     //Get user by id
     .get("/api/user/:id", userController.validateId, userController.getUserById)
+
 
     //Update user
     .put(
