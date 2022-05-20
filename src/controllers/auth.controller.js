@@ -125,10 +125,11 @@ module.exports = {
             jwt.verify(token, jwtSecretKey, (err, payload) => {
                 if (err) {
                     logger.warn('Not authorized')
-                    res.status(401).json({
-                        error: 'Not authorized',
-                        datetime: new Date().toISOString(),
-                    })
+                    const err = {
+                        status: 401,
+                        message: 'Not authorized'
+                    };
+                    next(err);
                 }
                 if (payload) {
                     logger.debug('token is valid', payload)

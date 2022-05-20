@@ -21,12 +21,13 @@ router
     .get("/api/user/profile", authController.validateToken, userController.getUserProfile)
 
     //Get user by id
-    .get("/api/user/:id", userController.validateId, userController.getUserById)
+    .get("/api/user/:id", authController.validateToken, userController.validateId, userController.getUserById)
 
 
     //Update user
     .put(
         "/api/user/:id",
+        authController.validateToken,
         userController.validateUser,
         userController.validateId,
         userController.updateUser
@@ -35,6 +36,7 @@ router
     //Delete user
     .delete(
         "/api/user/:id",
+        authController.validateToken,
         userController.validateId,
         userController.deleteUser
     );

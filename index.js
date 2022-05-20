@@ -8,6 +8,7 @@ const { get } = require("express/lib/response");
 
 const userRoutes = require('./src/routes/user.routes');
 const authRoutes = require('./src/routes/auth.routes');
+const mealRoutes = require('./src/routes/meals.routes');
 
 const logger = require('./src/config/config').logger
 
@@ -21,6 +22,7 @@ app.all("*", (req, res, next) => {
 
 app.use(userRoutes);
 app.use(authRoutes);
+app.use(mealRoutes);
 
 //End-point not found
 app.all("*", (req, res) => {
@@ -32,7 +34,7 @@ app.all("*", (req, res) => {
 
 //Error handler
 app.use((err, req, res, next) => {
-  console.log("Error: " + err.toString())
+  console.log(err);
   res.status(err.status).json(err)
 });
 

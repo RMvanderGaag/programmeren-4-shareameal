@@ -26,6 +26,9 @@ let controller = {
             assert(typeof emailAdress === 'string', 'EmailAddress must be a string');
             assert(typeof phoneNumber === 'string', 'PhoneNumber must be a string');
             assert(typeof password === 'string', 'Password must a string');
+            assert(/^\S+@\S+\.\S+$/.test(emailAdress), 'Email is not valid');
+            assert(/^[a-zA-z]{4,}$/.test(password), 'Password is not valid');
+            assert(/^\+316\d{8}$/.test(phoneNumber), 'Phonenumber is not valid');
 
             next();
         } catch (err) {
@@ -62,7 +65,7 @@ let controller = {
 
         if (firstName || isActive) {
             queryString += " WHERE "
-            if (nafirstNameme) {
+            if (firstName) {
                 queryString += '`firstName` LIKE ?'
                 firstName = '%' + firstName + '%'
             }
@@ -92,11 +95,11 @@ let controller = {
                     if (error) next(error)
 
                     // Don't use the connection here, it has been returned to the pool.
-                    logger.debug('#results = ', results.length)
                     res.status(200).json({
-                        statusCode: 200,
-                        results: results,
-                    })
+                        status: 200,
+                        result: results,
+                    });
+                    console.log(results);
                 }
             )
         })
@@ -120,10 +123,11 @@ let controller = {
                 // Handle error after the release.
                 if (dbError) {
                     if (dbError.errno == 1062) {
-                        res.status(409).json({
+                        const error = {
                             status: 409,
-                            message: "Email is already used"
-                        });
+                            message: "User already exists",
+                        };
+                        next(error);
                     } else {
                         res.status(500).json({
                             status: 500,
@@ -131,13 +135,12 @@ let controller = {
                         });
                     }
                 } else {
+                    const userRes = { id: result.insertId, ...user }
                     res.status(201).json({
                         status: 201,
-                        result: {
-                            id: result.insertId,
-                            ...user
-                        }
+                        result: userRes
                     });
+                    console.log(userRes);
                 }
             });
         });
@@ -150,7 +153,7 @@ let controller = {
             try {
                 decoded = jwt.verify(authorization, jwtSecretKey);
             } catch (e) {
-                return res.status(401).send('unauthorized');
+                return;
             }
             var userId = decoded.userId;
 
@@ -175,6 +178,7 @@ let controller = {
                                 status: 200,
                                 result: results,
                             });
+                            console.log(results);
                         }
                     }
                 );
@@ -183,7 +187,7 @@ let controller = {
 
     },
 
-    getUserById: (req, res) => {
+    getUserById: (req, res, next) => {
         const userId = req.params.id;
         dbconnection.getConnection(function (err, connection) {
             if (err) throw err; // not connected!
@@ -197,22 +201,24 @@ let controller = {
 
                     // Handle error after the release.
                     if (results.length == 0) {
-                        res.status(404).json({
+                        const err = {
                             status: 404,
                             message: "User does not exist"
-                        });
+                        }
+                        next(err);
                     } else {
                         res.status(200).json({
                             status: 200,
                             result: results,
                         });
+                        console.log(results[0]);
                     }
                 }
             );
         });
     },
 
-    updateUser: (req, res) => {
+    updateUser: (req, res, next) => {
         let newUserInfo = req.body;
         const userId = req.params.id;
         dbconnection.getConnection(function (err, connection) {
@@ -232,11 +238,13 @@ let controller = {
                             status: 200,
                             result: results,
                         });
+                        console.log(newUserInfo);
                     } else {
-                        res.status(404).json({
-                            status: 404,
-                            message: "User does not exist",
-                        });
+                        const err = {
+                            status: 400,
+                            message: "User does not exist"
+                        }
+                        next(err);
                     }
 
                     // Don't use the connection here, it has been returned to the pool.
@@ -246,40 +254,60 @@ let controller = {
         });
     },
 
-    deleteUser: (req, res) => {
-        const userId = req.params.id;
-        dbconnection.getConnection(function (connError, conn) {
-            //Not connected
-            if (connError) {
-                res.status(502).json({
-                    status: 502,
-                    result: "Couldn't connect to database",
-                });
+    deleteUser: (req, res, next) => {
+        if (req.headers && req.headers.authorization) {
+            var authorization = req.headers.authorization.split(' ')[1],
+                decoded;
+            try {
+                decoded = jwt.verify(authorization, jwtSecretKey);
+            } catch (e) {
                 return;
             }
-
-            conn.query(
-                "DELETE FROM user WHERE id = ?",
-                userId,
-                function (dbError, results, fields) {
-                    // When done with the connection, release it.
-                    conn.release();
-
-                    // Handle error after the release.
-                    if (results.affectedRows > 0) {
-                        res.status(200).json({
-                            status: 200,
-                            result: `User is successfully deleted`,
-                        });
-                    } else {
-                        res.status(400).json({
-                            status: 400,
-                            message: "User does not exist",
-                        });
-                    }
+            const userId = decoded.userId;
+            const id = req.params.id;
+            dbconnection.getConnection(function (connError, conn) {
+                //Not connected
+                if (connError) {
+                    res.status(502).json({
+                        status: 502,
+                        result: "Couldn't connect to database",
+                    });
+                    return;
                 }
-            );
-        });
+
+                if (userId == id) {
+                    conn.query(
+                        "DELETE FROM user WHERE id = ?",
+                        id,
+                        function (dbError, results, fields) {
+                            // When done with the connection, release it.
+                            conn.release();
+
+                            // Handle error after the release.
+                            if (results.affectedRows > 0) {
+                                res.status(200).json({
+                                    status: 200,
+                                    message: "User is successfully deleted",
+                                });
+                            } else {
+                                const err = {
+                                    status: 400,
+                                    message: "User does not exist"
+                                }
+                                next(err);
+                            }
+                        }
+                    );
+                } else {
+                    const err = {
+                        status: 403,
+                        message: "User is not the owner of this account"
+                    }
+                    next(err);
+                }
+            });
+
+        }
     },
 };
 
