@@ -26,6 +26,91 @@ chai.should();
 chai.use(chaiHttp);
 
 describe('Manage users api/user', () => {
+    describe('UC-101 login', () => {
+        afterEach((done) => {
+            dbconnection.query(CLEAR_USERS_TABLE, (err, result, fields) => {
+                if (err) throw err;
+                done();
+            })
+        });
+        it('TC 101-1 When a required input is missing, a valid error should be returned', (done) => {
+            chai.request(server).post('/auth/login').send({
+                password: "secret"
+            })
+                .end((err, res) => {
+                    assert.ifError(err);
+
+                    res.should.have.status(400);
+                    res.should.be.an('object');
+                    res.body.should.be.an('object').that.has.all.keys('status', 'message');
+
+                    let { status, message } = res.body;
+                    status.should.be.a('number');
+                    message.should.be.a('string').that.contains('email must be a string');
+
+                    done();
+                });
+        })
+        it('TC 101-2 When the email address does not match the regex, a valid error should be returned', (done) => {
+            chai.request(server).post('/auth/login').send({
+                emailAdress: "jdoe@server",
+                password: "secret"
+            })
+                .end((err, res) => {
+                    assert.ifError(err);
+
+                    res.should.have.status(400);
+                    res.should.be.an('object');
+                    res.body.should.be.an('object').that.has.all.keys('status', 'message');
+
+                    let { status, message } = res.body;
+                    status.should.be.a('number');
+                    message.should.be.a('string').that.contains('Email is not valid');
+
+                    done();
+                });
+        });
+        it('TC 101-3 When the user does not exist, a valid error should be returned', (done) => {
+            chai.request(server).post('/auth/login').send({
+                emailAdress: "j.doe@server.com",
+                password: "password"
+            })
+                .end((err, res) => {
+                    assert.ifError(err);
+
+                    res.should.have.status(404);
+                    res.should.be.an('object');
+                    res.body.should.be.an('object').that.has.all.keys('status', 'message');
+
+                    let { status, message } = res.body;
+                    status.should.be.a('number');
+                    message.should.be.a('string').that.contains('User not found or password invalid');
+
+                    done();
+                });
+        });
+        it('TC 101-4 User successfully logged in', (done) => {
+            dbconnection.query(INSERT_USER_1, () => {
+                chai.request(server).post('/auth/login').send({
+                    emailAdress: "d.ambesi@avans.nl",
+                    password: "secret"
+                })
+                    .end((err, res) => {
+                        assert.ifError(err);
+
+                        res.should.have.status(200);
+                        res.should.be.an('object');
+                        res.body.should.be.an('object').that.has.all.keys('status', 'result');
+
+                        let { status, result } = res.body;
+                        status.should.be.a('number');
+
+                        done();
+                    });
+            })
+        })
+    })
+
     describe('UC-201 add user', () => {
         afterEach((done) => {
             dbconnection.query(CLEAR_USERS_TABLE, (err, result, fields) => {

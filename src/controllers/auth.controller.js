@@ -58,21 +58,23 @@ module.exports = {
                                             'User logged in, sending: ',
                                             userinfo
                                         )
+                                        var loginResult = { ...userinfo, token }
                                         res.status(200).json({
-                                            statusCode: 200,
-                                            results: { ...userinfo, token },
+                                            status: 200,
+                                            result: loginResult,
                                         })
+                                        console.log(loginResult);
                                     }
                                 )
                             } else {
                                 logger.info(
                                     'User not found or password invalid'
                                 )
-                                res.status(401).json({
-                                    message:
-                                        'User not found or password invalid',
-                                    datetime: new Date().toISOString(),
-                                })
+                                const err = {
+                                    status: 404,
+                                    message: 'User not found or password invalid'
+                                }
+                                next(err);
                             }
                         }
                     }
@@ -95,12 +97,14 @@ module.exports = {
                 typeof req.body.password === 'string',
                 'password must be a string.'
             )
+            assert(/^\S+@\S+\.\S+$/.test(req.body.emailAdress), 'Email is not valid');
             next()
-        } catch (ex) {
-            res.status(422).json({
-                error: ex.toString(),
-                datetime: new Date().toISOString(),
-            })
+        } catch (err) {
+            const error = {
+                status: 400,
+                message: err.message,
+            };
+            next(error);
         }
     },
 
