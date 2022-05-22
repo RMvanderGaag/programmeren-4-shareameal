@@ -101,7 +101,7 @@ let controller = {
         })
     },
 
-    deleteMeal: (req, res, next) => {
+    updateMeal: (req, res, next) => {
         if (req.headers && req.headers.authorization) {
             var authorization = req.headers.authorization.split(' ')[1],
                 decoded;
@@ -110,9 +110,12 @@ let controller = {
             } catch (e) {
                 return;
             }
+            const newMealdata = req.body;
             const userId = decoded.userId;
-            const id = req.params.id;
             const mealId = req.params.id;
+
+            newMealdata.allergenes = newMealdata.allergenes.join(",");
+
             dbconnection.query(
                 `SELECT cookId FROM meal WHERE id = ${mealId}`,
                 (err, result, fields) => {
@@ -127,7 +130,66 @@ let controller = {
                     else if (result.length > 0) {
                         //Kijk of meal van user is
                         console.log(result.length);
-                        if (result[0].cookId == userId) {
+                        if (result[0].cookId == userId || result[0].cookId == null) {
+                            dbconnection.query(
+                                `UPDATE meal SET ? WHERE id = ?`,
+                                [newMealdata, mealId],
+                                (err, results) => {
+                                    //Update meal
+                                    res.status(200).json({
+                                        status: 200,
+                                        result: newMealdata,
+                                    });
+                                }
+                            );
+                        } else {
+                            const error = {
+                                status: 403,
+                                message:
+                                    "You are not the owner of this meal",
+                            };
+                            next(error);
+                        }
+                    } else {
+                        const error = {
+                            status: 404,
+                            message: "Meal does not exist",
+                        };
+                        next(error);
+                    }
+                }
+            );
+        }
+    },
+
+    deleteMeal: (req, res, next) => {
+        if (req.headers && req.headers.authorization) {
+            var authorization = req.headers.authorization.split(' ')[1],
+                decoded;
+            try {
+                decoded = jwt.verify(authorization, jwtSecretKey);
+            } catch (e) {
+                return;
+            }
+            const userId = decoded.userId;
+            const id = req.params.id;
+            const mealId = req.params.id;
+
+            dbconnection.query(
+                `SELECT cookId FROM meal WHERE id = ${mealId}`,
+                (err, result, fields) => {
+                    if (err) {
+                        const error = {
+                            status: 500,
+                            message: err.message,
+                        };
+                        next(error);
+                    }
+                    //Kijk of meal bestaat
+                    else if (result.length > 0) {
+                        //Kijk of meal van user is
+                        console.log(result.length);
+                        if (result[0].cookId == userId || result[0].cookId == null) {
                             dbconnection.query(
                                 `DELET FROM meal WHERE id = ${mealId} `,
                                 (err, results) => {

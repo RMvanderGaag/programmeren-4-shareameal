@@ -8,6 +8,7 @@ router
     .get("/api/meal/:id", mealController.getMeal)
     .delete("/api/meal/:id", authController.validateToken, mealController.deleteMeal)
     .post("/api/meal", authController.validateToken, mealController.validateMeal, mealController.addMeal)
+    .put("/api/meal/:id", authController.validateToken, mealController.validateMeal, mealController.updateMeal)
 
 
 

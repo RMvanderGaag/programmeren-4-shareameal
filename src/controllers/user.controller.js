@@ -236,7 +236,7 @@ let controller = {
                     if (results.affectedRows > 0) {
                         res.status(200).json({
                             status: 200,
-                            result: results,
+                            result: newUserInfo,
                         });
                         console.log(newUserInfo);
                     } else {

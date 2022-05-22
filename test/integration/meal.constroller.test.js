@@ -140,6 +140,198 @@ describe('Manage meal api/meal', () => {
                 });
         })
     })
+
+    describe("UC-302 Update meal", () => {
+        afterEach((done) => {
+            dbconnection.query(CLEAR_MEAL_TABLE, (err, result, fields) => {
+                dbconnection.query(CLEAR_USERS_TABLE, () => {
+                    if (err) throw err;
+                    done();
+                })
+            })
+        });
+
+        it("TC 302-1  When required input is missing, a valid error should be returned", (done) => {
+            dbconnection.query(INSERT_MEAL_1, () => {
+                chai.request(server).put('/api/meal/1')
+                    .set({ Authorization: token })
+                    .send({
+                        description: "Testen",
+                        isActive: true,
+                        isVega: true,
+                        isVegan: true,
+                        isToTakeHome: true,
+                        dateTime: "2022-05-17T14:57:08.748Z",
+                        imageUrl: "https://miljuschka.nl/wp-content/uploads/2021/02/Pasta-bolognese-3-2.jpg",
+                        allergenes: [
+                            "noten",
+                            "lactose"
+                        ],
+                    })
+                    .end((err, res) => {
+                        assert.ifError(err);
+
+                        res.should.have.status(400);
+                        res.should.be.an('object');
+                        res.body.should.be.an('object').that.has.all.keys('status', 'message');
+
+                        let { status, message } = res.body;
+                        status.should.be.a('number');
+                        message.should.be.a('string').that.contains('name must be a string');
+
+                        done();
+                    });
+            });
+
+        })
+
+        it("TC 302-2 When the user is not logged in, a valid error should be returned", (done) => {
+            dbconnection.query(INSERT_MEAL_1, () => {
+                chai.request(server).put('/api/meal/1')
+                    .set({ Authorization: "bearer asdfasdf" })
+                    .send({
+                        name: "test",
+                        description: "Testen",
+                        isActive: true,
+                        isVega: true,
+                        isVegan: true,
+                        isToTakeHome: true,
+                        dateTime: "2022-05-17T14:57:08.748Z",
+                        imageUrl: "https://miljuschka.nl/wp-content/uploads/2021/02/Pasta-bolognese-3-2.jpg",
+                        allergenes: [
+                            "noten",
+                            "lactose"
+                        ],
+                        maxAmountOfParticipants: 6,
+                        price: 6.75
+                    })
+                    .end((err, res) => {
+                        assert.ifError(err);
+
+                        res.should.have.status(401);
+                        res.should.be.an('object');
+                        res.body.should.be.an('object').that.has.all.keys('status', 'message');
+
+                        let { status, message } = res.body;
+                        status.should.be.a('number');
+                        message.should.be.a('string').that.contains('Not authorized');
+
+                        done();
+                    });
+            });
+        })
+
+        it("TC-302-3 When the user is not the owner of the meal, a valid error should be returned", (done) => {
+            dbconnection.query(INSERT_USER_2, () => {
+                dbconnection.query(INSERT_MEAL_1, () => {
+                    chai
+                        .request(server)
+                        .put("/api/meal/1")
+                        .set({
+                            Authorization: 'Bearer eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJ1c2VySWQiOjUsImlhdCI6MTY1MzA1NTI5NSwiZXhwIjoxNjU0MDkyMDk1fQ.OKjPkj0LsoVzksiIHt1UcXzcLDohIs6gjU-C0N-9ROg',
+                        })
+                        .send({
+                            name: "test",
+                            description: "Testen",
+                            isActive: true,
+                            isVega: true,
+                            isVegan: true,
+                            isToTakeHome: true,
+                            dateTime: "2022-05-17T14:57:08.748Z",
+                            imageUrl: "https://miljuschka.nl/wp-content/uploads/2021/02/Pasta-bolognese-3-2.jpg",
+                            allergenes: [
+                                "noten",
+                                "lactose"
+                            ],
+                            maxAmountOfParticipants: 6,
+                            price: 6.75
+                        })
+                        .end((req, res) => {
+
+                            res.should.have.status(403);
+                            res.should.be.an('object');
+                            res.body.should.be.an('object').that.has.all.keys('status', 'message');
+
+                            let { status, message } = res.body;
+                            status.should.be.a('number');
+                            message.should.be.a('string').that.contains('You are not the owner of this meal');
+
+                            done();
+                        });
+                });
+            });
+        });
+
+        it("TC 302-4 When the meal does not exist, a valid error should be returned", (done) => {
+            chai.request(server).put('/api/meal/112312')
+                .set({ Authorization: token })
+                .send({
+                    name: "test",
+                    description: "Testen",
+                    isActive: true,
+                    isVega: true,
+                    isVegan: true,
+                    isToTakeHome: true,
+                    dateTime: "2022-05-17T14:57:08.748Z",
+                    imageUrl: "https://miljuschka.nl/wp-content/uploads/2021/02/Pasta-bolognese-3-2.jpg",
+                    allergenes: [
+                        "noten",
+                        "lactose"
+                    ],
+                    maxAmountOfParticipants: 6,
+                    price: 6.75
+                })
+                .end((err, res) => {
+                    assert.ifError(err);
+
+                    res.should.have.status(404);
+                    res.should.be.an('object');
+                    res.body.should.be.an('object').that.has.all.keys('status', 'message');
+
+                    let { status, message } = res.body;
+                    status.should.be.a('number');
+                    message.should.be.a('string').that.contains('Meal does not exist');
+
+                    done();
+                });
+        })
+
+        it("TC 302-5 Meal successfully updated", (done) => {
+            dbconnection.query(INSERT_USER_2, () => {
+                dbconnection.query(INSERT_MEAL_1, () => {
+                    chai.request(server).put('/api/meal/1')
+                        .set({ Authorization: token })
+                        .send({
+                            name: "test maaltijd",
+                            description: "Testen",
+                            isActive: true,
+                            isVega: true,
+                            isVegan: true,
+                            isToTakeHome: true,
+                            dateTime: "2022-05-17T14:57:08.748Z",
+                            imageUrl: "https://miljuschka.nl/wp-content/uploads/2021/02/Pasta-bolognese-3-2.jpg",
+                            allergenes: [
+                                "noten",
+                                "lactose"
+                            ],
+                            maxAmountOfParticipants: 6,
+                            price: 6.75
+                        })
+                        .end((err, res) => {
+
+                            res.should.have.status(200);
+                            res.should.be.an('object');
+                            res.body.should.be.an('object').that.has.all.keys('status', 'result');
+
+                            let { status, result } = res.body;
+                            status.should.be.a('number');
+                            done();
+                        });
+                });
+            });
+        })
+    })
+
     describe("UC-303 Meal list", () => {
         afterEach((done) => {
             dbconnection.query(CLEAR_MEAL_TABLE, (err, result, fields) => {
