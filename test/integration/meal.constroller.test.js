@@ -117,7 +117,7 @@ describe('Manage meal api/meal', () => {
                     isVega: true,
                     isVegan: true,
                     isToTakeHome: true,
-                    dateTime: "2022-05-17T14:57:08.748Z",
+                    dateTime: "1000-01-01 00:00:00",
                     imageUrl: "https://miljuschka.nl/wp-content/uploads/2021/02/Pasta-bolognese-3-2.jpg",
                     allergenes: [
                         "noten",
